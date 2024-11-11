@@ -25,7 +25,7 @@ Automated-Contract-Management
 ```
 
 ## Requirements
-```
+
 - Python 3.7+
 - Required Python packages:
   ```bash
