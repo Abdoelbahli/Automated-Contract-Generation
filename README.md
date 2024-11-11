@@ -2,7 +2,7 @@
 
 
 
-```markdown
+
 # Automated Contract Management
 
 A Python project that automates contract data extraction, validation, and generation using templates. This project includes the following functionalities:
@@ -12,7 +12,7 @@ A Python project that automates contract data extraction, validation, and genera
 
 ## Project Structure
 
-```
+```markdown
 Automated-Contract-Management
 │
 ├── contract_loader.py               # File for extracting contract information
@@ -25,7 +25,7 @@ Automated-Contract-Management
 ```
 
 ## Requirements
-
+```
 - Python 3.7+
 - Required Python packages:
   ```bash
