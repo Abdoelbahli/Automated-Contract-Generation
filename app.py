@@ -3,63 +3,107 @@ from docxtpl import DocxTemplate
 from pathlib import Path
 from io import BytesIO
 import os
+from validation_checks import validate_contract_data
 
-# Define constants and helper functions at the top of the file
+# Define template path
 TEMPLATE_PATH = Path(__file__).parent / "templates" / "contract_template.docx"
 
-def load_contract_template():
-    """Load the contract template file."""
-    try:
-        if not TEMPLATE_PATH.exists():
-            st.error(f"Template file not found at: {TEMPLATE_PATH}")
-            return None
-        return DocxTemplate(str(TEMPLATE_PATH))
-    except Exception as e:
-        st.error(f"Error loading template: {str(e)}")
-        return None
+# Set page title
+st.title("Contract Generation and Validation")
 
-def generate_contract(contract_data):
-    """Generate a contract from template and data."""
-    try:
-        template = load_contract_template()
-        if template is None:
-            return None
+# Add navigation
+option = st.sidebar.selectbox(
+    "Choose a function",
+    ("Contract Generation", "Contract Validation", "Contract Insights")
+)
+
+if option == "Contract Generation":
+    st.header("Contract Generation")
+    st.write("Fill in the contract details below:")
+
+    # Contract form inputs
+    contract_data = {
+        "client_name": st.text_input("Client Name"),
+        "project_name": st.text_input("Project Name"),
+        "start_date": st.date_input("Start Date"),
+        "end_date": st.date_input("End Date"),
+        "contract_value": st.number_input("Contract Value", min_value=0.0),
+        "payment_terms": st.text_area("Payment Terms"),
+        "scope_of_work": st.text_area("Scope of Work")
+    }
+
+    if st.button("Generate Contract"):
+        try:
+            # Load template
+            template = DocxTemplate(str(TEMPLATE_PATH))
             
-        template.render(contract_data)
+            # Convert dates to string format
+            contract_data["start_date"] = contract_data["start_date"].strftime("%Y-%m-%d")
+            contract_data["end_date"] = contract_data["end_date"].strftime("%Y-%m-%d")
+            
+            # Render template
+            template.render(contract_data)
+            
+            # Save to BytesIO
+            doc_io = BytesIO()
+            template.save(doc_io)
+            doc_io.seek(0)
+            
+            # Offer download
+            st.download_button(
+                label="Download Contract",
+                data=doc_io,
+                file_name="generated_contract.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+            
+        except Exception as e:
+            st.error(f"Error generating contract: {str(e)}")
+
+elif option == "Contract Validation":
+    st.header("Contract Validation")
+    st.write("Upload your contract file(s) for validation.")
+
+    uploaded_files = st.file_uploader("Upload contract file(s) or a zip folder containing contracts:", 
+                                    type=["docx", "zip"], 
+                                    accept_multiple_files=True)
+
+    if uploaded_files:
+        contract_results = []
         
-        # Create a BytesIO object to store the document
-        doc_io = BytesIO()
-        template.save(doc_io)
-        doc_io.seek(0)
-        return doc_io
-    except Exception as e:
-        st.error(f"Error generating contract: {str(e)}")
-        return None
+        for uploaded_file in uploaded_files:
+            # Your existing validation logic here
+            contract_data = {}  # Replace with your actual contract data extraction
+            validation_issues = validate_contract_data(contract_data)
+            
+            # Store results
+            has_issues = bool(validation_issues) and validation_issues != {"Complete and Valid": ["Contract is complete and valid."]}
+            contract_results.append({
+                "file_name": uploaded_file.name,
+                "issues": validation_issues,
+                "has_issues": has_issues
+            })
 
-# Streamlit app main code
-def main():
-    st.title("Contract Generation and Validation")
+        # Sort and display results
+        contract_results.sort(key=lambda x: x["has_issues"], reverse=True)
+        
+        for result in contract_results:
+            file_display = f"**{result['file_name']}**"
+            if result["has_issues"]:
+                st.write(file_display, ":red[Issue found!]")
+                for category, issue_list in result["issues"].items():
+                    st.markdown(f"### {category}")
+                    for issue in issue_list:
+                        st.markdown(f"- {issue}")
+            else:
+                st.write(file_display, ":green[All checks passed!]")
+                st.markdown("### Contract is complete and valid.")
+            st.markdown("---")
+    else:
+        st.error("Please upload a contract file, multiple contract files, or a zip folder containing contracts.")
+
+elif option == "Contract Insights":
+    st.header("Contract Insights Dashboard")
+    st.write("Upload your contract files to generate insightful statistics and visualizations.")
     
-    # Add navigation
-    option = st.sidebar.selectbox(
-        "Choose a function",
-        ("Contract Validation", "Contract Generation", "Contract Insights")
-    )
-
-    if option == "Contract Validation":
-        # Your existing validation code
-        template = load_contract_template()
-        if template is None:
-            st.stop()
-        # Rest of your validation code...
-
-    elif option == "Contract Generation":
-        # Your contract generation code
-        pass
-
-    elif option == "Contract Insights":
-        # Your insights code
-        pass
-
-if __name__ == "__main__":
-    main()
+    # Your existing insights code here
