@@ -6,8 +6,8 @@ import os
 from contract_loader import extract_contract_data
 from validation_checks import check_completeness, validate_contract_data
 
-# Define template path
-TEMPLATE_PATH = Path(__file__).parent / "templates" / "Contract_template.docx"
+# Define template path - make sure the filename matches exactly
+TEMPLATE_PATH = Path(__file__).parent / "templates" / "contract_template.docx"
 
 
 
@@ -55,37 +55,38 @@ if option == "Generate Contract":
     governing_law = st.text_input("Governing Law")
 
     if st.button("Generate Contract"):
-        contract_data = {
-            "contract_date": contract_date,
-            "service_provider": service_provider,
-            "provider_address": provider_address,
-            "provider_email": provider_email,
-            "client_name": client_name,
-            "client_address": client_address,
-            "client_email": client_email,
-            "service_description": service_description,
-            "payment_amount": payment_amount,
-            "payment_terms": payment_terms,
-            "start_date": start_date,
-            "end_date": end_date,
-            "termination_conditions": termination_conditions,
-            "governing_law": governing_law
-        }
-
-        template = DocxTemplate("TEMPLATE_PATH")
-        template.render(contract_data)
-        output_filename = f"generated_contract_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
-        template.save(output_filename)
-        st.success(f"Contract generated and saved as {output_filename}")
-
-        # Button to download the generated contract
-        with open(output_filename, "rb") as file:
+        try:
+            # Debug the path
+            st.write(f"Looking for template at: {TEMPLATE_PATH}")
+            
+            if not TEMPLATE_PATH.exists():
+                st.error(f"Template file not found at: {TEMPLATE_PATH}")
+                st.stop()
+                
+            # Load template
+            doc = DocxTemplate(str(TEMPLATE_PATH))  # Convert Path to string
+            
+            # Process dates
+            contract_data["start_date"] = contract_data["start_date"].strftime("%Y-%m-%d")
+            contract_data["end_date"] = contract_data["end_date"].strftime("%Y-%m-%d")
+            
+            # Render the template with the data
+            doc.render(contract_data)
+            
+            # Create a BytesIO object to store the document
+            doc_io = BytesIO()
+            doc.save(doc_io)
+            doc_io.seek(0)
+            
+            # Offer the document for download
             st.download_button(
                 label="Download Contract",
-                data=file,
-                file_name=output_filename,
+                data=doc_io,
+                file_name="generated_contract.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
+        except Exception as e:
+            st.error(f"Error generating contract: {str(e)}")
 
 # Contract Checker
 elif option == "Check Contract":
