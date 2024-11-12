@@ -5,6 +5,7 @@ from io import BytesIO
 import os
 from contract_loader import extract_contract_data
 from validation_checks import check_completeness, validate_contract_data
+from datetime import datetime
 
 # Define template path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -91,15 +92,25 @@ if option == "Generate Contract":
             # Load template
             doc = DocxTemplate(template_path)
             
-            # Rest of your code remains the same
-            contract_data["start_date"] = contract_data["start_date"].strftime("%Y-%m-%d")
-            contract_data["end_date"] = contract_data["end_date"].strftime("%Y-%m-%d")
-            doc.render(contract_data)
+            # Create a copy of contract_data to avoid modifying the original
+            template_data = contract_data.copy()
             
+            # Format dates properly
+            if isinstance(template_data["start_date"], datetime):
+                template_data["start_date"] = template_data["start_date"].strftime("%Y-%m-%d")
+            
+            if isinstance(template_data["end_date"], datetime):
+                template_data["end_date"] = template_data["end_date"].strftime("%Y-%m-%d")
+            
+            # Render the template with the formatted data
+            doc.render(template_data)
+            
+            # Create a BytesIO object to store the document
             doc_io = BytesIO()
             doc.save(doc_io)
             doc_io.seek(0)
             
+            # Offer the document for download
             st.download_button(
                 label="Download Contract",
                 data=doc_io,
@@ -108,6 +119,8 @@ if option == "Generate Contract":
             )
         except Exception as e:
             st.error(f"Error: {str(e)}")
+            # Add more detailed error information
+            st.error(f"Data types: start_date: {type(contract_data['start_date'])}, end_date: {type(contract_data['end_date'])}")
 
 # Contract Checker
 elif option == "Check Contract":
