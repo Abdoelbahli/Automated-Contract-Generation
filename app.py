@@ -8,9 +8,13 @@ from validation_checks import check_completeness, validate_contract_data
 
 # Define template path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-template_path = os.path.join(current_dir, "templates", "contract_template.docx")
+template_path = os.path.join(current_dir, "templates", "Contract_template.docx")
 
-
+# Add debug information at the start
+st.write("Current working directory:", os.getcwd())
+st.write("Files in current directory:", os.listdir())
+if os.path.exists("templates"):
+    st.write("Files in templates directory:", os.listdir("templates"))
 
 # Function to load and process contract data
 def load_contract_data(files):
@@ -75,8 +79,9 @@ if option == "Generate Contract":
 
         try:
             # Debug information
-            st.write(f"Current directory: {current_dir}")
-            st.write(f"Looking for template at: {template_path}")
+            st.write(f"Template path: {template_path}")
+            st.write(f"Template exists: {os.path.exists(template_path)}")
+            st.write(f"Template is file: {os.path.isfile(template_path)}")
             
             # Check if template exists
             if not os.path.exists(template_path):
@@ -84,7 +89,7 @@ if option == "Generate Contract":
                 st.stop()
             
             # Load template
-            doc = DocxTemplate(template_path)  # Use template_path instead of TEMPLATE_PATH
+            doc = DocxTemplate(template_path)
             
             # Rest of your code remains the same
             contract_data["start_date"] = contract_data["start_date"].strftime("%Y-%m-%d")
