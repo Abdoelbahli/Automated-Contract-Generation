@@ -122,33 +122,41 @@ elif option == "Check Contract":
     uploaded_files = st.file_uploader("Upload contracts for checking", type=["docx"], accept_multiple_files=True)
     
     if uploaded_files:
-        try:
-            # Initialize issues dictionary with all possible categories
-            issues = {
-                "Missing Fields": [],
-                "Date Problems": [],
-                "Expiring Soon": [],
-                "Complete and Valid": [],
-                "Missing Information": []
-            }
-            
-            for uploaded_file in uploaded_files:
-                # Extract and validate contract data
-                contract_data = extract_contract_data(uploaded_file)
-                validation_issues = validate_contract_data(contract_data)
+        if st.button("Check Contract"):
+            try:
+                # Initialize issues dictionary
+                issues = {
+                    "Missing Fields": [],
+                    "Date Problems": [],
+                    "Expiring Soon": [],
+                    "Complete and Valid": [],
+                    "Missing Information": []
+                }
                 
-                # Merge validation issues
-                if validation_issues and validation_issues != {"Complete and Valid": ["Contract is complete and valid."]}:
-                    for category, issue_list in validation_issues.items():
-                        if category not in issues:
-                            issues[category] = []
-                        issues[category].extend(issue_list)
-            
-            # Rest of your existing code...
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
-            # Add more detailed error information
-            st.error(f"Data types: start_date: {type(contract_data['start_date'])}, end_date: {type(contract_data['end_date'])}")
+                for uploaded_file in uploaded_files:
+                    # Extract and validate contract data
+                    contract_data = extract_contract_data(uploaded_file)
+                    validation_issues = validate_contract_data(contract_data)
+                    
+                    # Merge validation issues
+                    if validation_issues and validation_issues != {"Complete and Valid": ["Contract is complete and valid."]}:
+                        for category, issue_list in validation_issues.items():
+                            if category not in issues:
+                                issues[category] = []
+                            issues[category].extend(issue_list)
+                
+                # Display results
+                if issues:
+                    for category, category_issues in issues.items():
+                        if category_issues:  # Only show categories with actual issues
+                            st.subheader(category)
+                            for issue in category_issues:
+                                st.write(f"- {issue}")
+                else:
+                    st.success("Contract validation passed successfully!")
+                    
+            except Exception as e:
+                st.error(f"Error checking contract: {str(e)}")
 
 # Contract Insights
 elif option == "Contract Insights":
