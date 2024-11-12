@@ -5,3 +5,4 @@ streamlit
 docxtpl
 pandas
 matplotlib
+spacy
