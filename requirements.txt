@@ -1,6 +1,9 @@
+# requirements.txt
+python-dateutil
+# spacy==3.5.0  # Comment out or remove this line
+python-dotenv
 streamlit
-pandas
-docxtpl
-matplotlib
-spacy
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
+# Add any other necessary packages
+
+# Specify Python version
+python_version >= "3.8", < "3.12"
