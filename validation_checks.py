@@ -25,42 +25,47 @@ def validate_contract_data(contract_data):
     """Validate contract data"""
     issues = {}
     
-    # Check for missing or empty fields
-    required_fields = [
-        "client_name",
-        "project_name",
-        "start_date",
-        "end_date",
-        "contract_value",
-        "payment_terms",
-        "scope_of_work"
-    ]
-    
-    missing_fields = []
-    for field in required_fields:
-        if field not in contract_data or not contract_data[field]:
-            missing_fields.append(field)
-    
-    if missing_fields:
-        issues["Missing Fields"] = [f"Missing {field}" for field in missing_fields]
-    
-    # Validate dates
+    # Unpack tuple values
     try:
-        start_date = parser.parse(str(contract_data.get("start_date", "")))
-        end_date = parser.parse(str(contract_data.get("end_date", "")))
+        client_name, project_name, start_date, end_date, contract_value, payment_terms, scope_of_work = contract_data
         
-        if start_date > end_date:
-            issues["Date Problems"] = ["End date must be after start date"]
+        # Check for missing or empty fields
+        if not all([client_name, project_name, start_date, end_date, contract_value, payment_terms, scope_of_work]):
+            issues["Missing Fields"] = []
+            if not client_name:
+                issues["Missing Fields"].append("Missing client name")
+            if not project_name:
+                issues["Missing Fields"].append("Missing project name")
+            if not start_date:
+                issues["Missing Fields"].append("Missing start date")
+            if not end_date:
+                issues["Missing Fields"].append("Missing end date")
+            if not contract_value:
+                issues["Missing Fields"].append("Missing contract value")
+            if not payment_terms:
+                issues["Missing Fields"].append("Missing payment terms")
+            if not scope_of_work:
+                issues["Missing Fields"].append("Missing scope of work")
         
-        # Check if contract is expiring soon (within 30 days)
-        if end_date - datetime.now() <= timedelta(days=30):
-            issues["Expiring Soon"] = ["Contract expires within 30 days"]
+        # Validate dates
+        try:
+            start_date = parser.parse(str(start_date))
+            end_date = parser.parse(str(end_date))
             
-    except (ValueError, TypeError):
-        issues["Date Problems"] = ["Invalid date format"]
-    
-    # If no issues found
-    if not issues:
-        issues["Complete and Valid"] = ["Contract is complete and valid."]
+            if start_date > end_date:
+                issues["Date Problems"] = ["End date must be after start date"]
+            
+            # Check if contract is expiring soon (within 30 days)
+            if end_date - datetime.now() <= timedelta(days=30):
+                issues["Expiring Soon"] = ["Contract expires within 30 days"]
+                
+        except (ValueError, TypeError):
+            issues["Date Problems"] = ["Invalid date format"]
+            
+        if not issues:
+            issues["Complete and Valid"] = ["Contract is complete and valid."]
+            
+    except (ValueError, TypeError) as e:
+        issues["Error"] = [f"Invalid contract data format: {str(e)}"]
     
     return issues
