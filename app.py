@@ -7,7 +7,8 @@ from contract_loader import extract_contract_data
 from validation_checks import check_completeness, validate_contract_data
 
 # Define template path
-TEMPLATE_PATH = Path(__file__).parent / "templates" / "Contract_template.docx"
+current_dir = os.path.dirname(os.path.abspath(__file__))
+template_path = os.path.join(current_dir, "templates", "contract_template.docx")
 
 
 
@@ -72,20 +73,36 @@ if option == "Generate Contract":
             "governing_law": governing_law
         }
 
-        template = DocxTemplate("TEMPLATE_PATH")
-        template.render(contract_data)
-        output_filename = f"generated_contract_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
-        template.save(output_filename)
-        st.success(f"Contract generated and saved as {output_filename}")
-
-        # Button to download the generated contract
-        with open(output_filename, "rb") as file:
+        try:
+            # Debug information
+            st.write(f"Current directory: {current_dir}")
+            st.write(f"Looking for template at: {template_path}")
+            
+            # Check if template exists
+            if not os.path.exists(template_path):
+                st.error(f"Template not found at: {template_path}")
+                st.stop()
+            
+            # Load template
+            doc = DocxTemplate(template_path)  # Use template_path instead of TEMPLATE_PATH
+            
+            # Rest of your code remains the same
+            contract_data["start_date"] = contract_data["start_date"].strftime("%Y-%m-%d")
+            contract_data["end_date"] = contract_data["end_date"].strftime("%Y-%m-%d")
+            doc.render(contract_data)
+            
+            doc_io = BytesIO()
+            doc.save(doc_io)
+            doc_io.seek(0)
+            
             st.download_button(
                 label="Download Contract",
-                data=file,
-                file_name=output_filename,
+                data=doc_io,
+                file_name="generated_contract.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
 
 # Contract Checker
 elif option == "Check Contract":
