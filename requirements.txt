@@ -5,6 +5,3 @@ streamlit
 docxtpl
 pandas
 matplotlib
-
-# Specify Python version
-python_version >= "3.8", < "3.12"
