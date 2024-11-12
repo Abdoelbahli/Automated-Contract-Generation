@@ -1,9 +1,6 @@
 # validation_checks.py
-import spacy
 from datetime import datetime, timedelta
 from dateutil import parser
-
-nlp = spacy.load("en_core_web_sm")
 
 def validate_contract_data(contract_data):
     """
