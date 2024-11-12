@@ -12,10 +12,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 template_path = os.path.join(current_dir, "templates", "Contract_template.docx")
 
 # Add debug information at the start
-st.write("Current working directory:", os.getcwd())
-st.write("Files in current directory:", os.listdir())
+#st.write("Current working directory:", os.getcwd())
+#st.write("Files in current directory:", os.listdir())
 if os.path.exists("templates"):
-    st.write("Files in templates directory:", os.listdir("templates"))
+    #st.write("Files in templates directory:", os.listdir("templates"))
 
 # Function to load and process contract data
 def load_contract_data(files):
