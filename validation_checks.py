@@ -25,7 +25,13 @@ def validate_contract_data(contract_data):
     """Validate contract data"""
     issues = {}
     
-    # Unpack tuple values
+    # Ensure we have a tuple with the right number of elements
+    expected_fields = 7
+    if len(contract_data) != expected_fields:
+        issues["Missing Fields"] = [f"Contract data is incomplete. Expected {expected_fields} fields, got {len(contract_data)}"]
+        return issues
+    
+    # Unpack tuple values only if we have the right number of elements
     try:
         client_name, project_name, start_date, end_date, contract_value, payment_terms, scope_of_work = contract_data
         
@@ -65,7 +71,7 @@ def validate_contract_data(contract_data):
         if not issues:
             issues["Complete and Valid"] = ["Contract is complete and valid."]
             
-    except (ValueError, TypeError) as e:
-        issues["Error"] = [f"Invalid contract data format: {str(e)}"]
+    except Exception as e:
+        issues["Error"] = [f"Error validating contract: {str(e)}"]
     
     return issues
