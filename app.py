@@ -331,12 +331,24 @@ elif option == "Contract Validation":
             # Extract contract data
             contract_data = extract_contract_data(uploaded_file)
             
-            # Validate contract data
-            issues = validate_contract_data(contract_data)
+            # Initialize issues dictionary with all possible categories
+            issues = {
+                "Missing Fields": [],
+                "Date Problems": [],
+                "Expiring Soon": [],
+                "Complete and Valid": [],
+                "Missing Information": []
+            }
             
-            # Initialize missing fields if not present
-            if "Missing Fields" not in issues:
-                issues["Missing Fields"] = []
+            # Validate contract data
+            validation_issues = validate_contract_data(contract_data)
+            
+            # Merge validation issues into main issues dictionary
+            if validation_issues:
+                for category, issue_list in validation_issues.items():
+                    if category not in issues:
+                        issues[category] = []
+                    issues[category].extend(issue_list)
             
             # Check for missing entities
             missing_entities = check_completeness(str(contract_data))
@@ -353,7 +365,10 @@ elif option == "Contract Validation":
             # Add missing entity messages to issues
             for entity in missing_entities:
                 if entity in friendly_messages:
-                    issues["Missing Fields"].append(friendly_messages[entity])
+                    issues["Missing Information"].append(friendly_messages[entity])
+            
+            # Remove empty categories
+            issues = {k: v for k, v in issues.items() if v}
             
             # Display validation results
             if issues:
