@@ -118,125 +118,37 @@ if option == "Generate Contract":
 
 # Contract Checker
 elif option == "Check Contract":
-    st.title("Contract Checker App")
-    st.write("Upload a single contract file, select multiple contract files, or upload a zip folder containing contracts.")
-
-    # File uploader for single or multiple contract files or a zip folder
-    uploaded_files = st.file_uploader("Upload contract file(s) or a zip folder containing contracts:", type=["docx", "zip"], accept_multiple_files=True)
-
-    # Button to start checking contracts
-    if st.button("Check Contracts"):
-        contract_results = []
-
-        if uploaded_files:
+    st.header("Contract Validation")
+    uploaded_files = st.file_uploader("Upload contracts for checking", type=["docx"], accept_multiple_files=True)
+    
+    if uploaded_files:
+        try:
+            # Initialize issues dictionary with all possible categories
+            issues = {
+                "Missing Fields": [],
+                "Date Problems": [],
+                "Expiring Soon": [],
+                "Complete and Valid": [],
+                "Missing Information": []
+            }
+            
             for uploaded_file in uploaded_files:
-                if uploaded_file.type == "application/zip":
-                    st.write("Checking contracts in the uploaded zip folder...")
-
-                    # Extract zip file contents
-                    with zipfile.ZipFile(BytesIO(uploaded_file.getbuffer()), 'r') as zip_ref:
-                        zip_ref.extractall("temp_contracts")
-
-                    # Process each contract file in the extracted folder
-                    for file_name in os.listdir("temp_contracts"):
-                        if file_name.endswith(".docx"):
-                            file_path = os.path.join("temp_contracts", file_name)
-
-                            # Load contract data and text
-                            contract_data, contract_text = extract_contract_data(file_path)
-
-                            # Check completeness and validation issues
-                            missing_entities = check_completeness(contract_text)
-                            validation_issues = validate_contract_data(contract_data)
-
-                            # Compile issues
-                            issues = {"Missing Information": [], "Date Problems": [], "Expiring Soon": []}
-                            if missing_entities:
-                                friendly_messages = {
-                                    "DATE": "The contract is missing a date.",
-                                    "GPE": "The contract is missing a location (e.g., country, state, city).",
-                                    "PERSON": "The contract is missing a person or party involved.",
-                                    "ORG": "The contract is missing an organization name."
-                                }
-                                for entity in missing_entities:
-                                    issues["Missing Information"].append(friendly_messages.get(entity, f"The contract is missing: {entity}"))
-
-                            if validation_issues and validation_issues != {"Complete and Valid": ["Contract is complete and valid."]}:
-                                for category, issue_list in validation_issues.items():
-                                    issues[category].extend(issue_list)
-
-                            # Remove any categories that don't have issues
-                            issues = {k: v for k, v in issues.items() if v}
-
-                            # Store results with flag for issues
-                            has_issues = bool(issues)
-                            contract_results.append({
-                                "file_name": file_name,
-                                "issues": issues,
-                                "has_issues": has_issues
-                            })
-                else:
-                    # Handle the uploaded contract file
-                    st.write(f"Checking the uploaded contract file: {uploaded_file.name}")
-
-                    # Save the uploaded file
-                    file_path = os.path.join("temp_contracts", uploaded_file.name)
-                    os.makedirs("temp_contracts", exist_ok=True)
-                    with open(file_path, "wb") as f:
-                        f.write(uploaded_file.getbuffer())
-
-                    # Process the uploaded file
-                    contract_data, contract_text = extract_contract_data(file_path)
-
-                    # Check completeness and validation issues
-                    missing_entities = check_completeness(contract_text)
-                    validation_issues = validate_contract_data(contract_data)
-
-                    # Compile issues
-                    issues = {"Missing Information": [], "Date Problems": [], "Expiring Soon": []}
-                    if missing_entities:
-                        friendly_messages = {
-                            "DATE": "The contract is missing a date.",
-                            "GPE": "The contract is missing a location (e.g., country, state, city).",
-                            "PERSON": "The contract is missing a person or party involved.",
-                            "ORG": "The contract is missing an organization name."
-                        }
-                        for entity in missing_entities:
-                            issues["Missing Information"].append(friendly_messages.get(entity, f"The contract is missing: {entity}"))
-
-                    if validation_issues and validation_issues != {"Complete and Valid": ["Contract is complete and valid."]}:
-                        for category, issue_list in validation_issues.items():
-                            issues[category].extend(issue_list)
-
-                    # Remove any categories that don't have issues
-                    issues = {k: v for k, v in issues.items() if v}
-
-                    # Store results with flag for issues
-                    has_issues = bool(issues)
-                    contract_results.append({
-                        "file_name": uploaded_file.name,
-                        "issues": issues,
-                        "has_issues": has_issues
-                    })
-
-            # Sort contracts with issues first
-            contract_results.sort(key=lambda x: x["has_issues"], reverse=True)
-
-            # Display results
-            for result in contract_results:
-                file_display = f"**{result['file_name']}**"
-                if result["has_issues"]:
-                    st.write(file_display, ":red[Issue found!]")
-                    for category, issue_list in result["issues"].items():
-                        st.markdown(f"### {category}")
-                        for issue in issue_list:
-                            st.markdown(f"- {issue}")
-                else:
-                    st.write(file_display, ":green[All checks passed!]")
-                    st.markdown("### Contract is complete and valid.")
-                st.markdown("---")  # Add horizontal line between results
-        else:
-            st.error("Please upload a contract file, multiple contract files, or a zip folder containing contracts.")
+                # Extract and validate contract data
+                contract_data = extract_contract_data(uploaded_file)
+                validation_issues = validate_contract_data(contract_data)
+                
+                # Merge validation issues
+                if validation_issues and validation_issues != {"Complete and Valid": ["Contract is complete and valid."]}:
+                    for category, issue_list in validation_issues.items():
+                        if category not in issues:
+                            issues[category] = []
+                        issues[category].extend(issue_list)
+            
+            # Rest of your existing code...
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+            # Add more detailed error information
+            st.error(f"Data types: start_date: {type(contract_data['start_date'])}, end_date: {type(contract_data['end_date'])}")
 
 # Contract Insights
 elif option == "Contract Insights":
