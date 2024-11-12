@@ -3,12 +3,12 @@ from docxtpl import DocxTemplate
 from pathlib import Path
 from io import BytesIO
 import os
-from validation_checks import validate_contract_data
-
-# Define template path
-TEMPLATE_PATH = Path(__file__).parent / "templates" / "contract_template.docx"
 from contract_loader import extract_contract_data
 from validation_checks import check_completeness, validate_contract_data
+
+# Define template path
+TEMPLATE_PATH = Path(__file__).parent / "templates" / "Contract_template.docx"
+
 
 
 # Function to load and process contract data
