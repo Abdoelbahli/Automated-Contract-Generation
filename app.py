@@ -33,7 +33,10 @@ def load_contract_data(files):
 
 # Sidebar with three options
 st.sidebar.title("Options")
-option = st.sidebar.radio("Select an option:", ("Generate Contract", "Check Contract", "Contract Insights", "Contract Validation"))
+option = st.sidebar.selectbox(
+    "Choose a function",
+    ("Generate Contract", "Check Contract", "Contract Insights")
+)
 
 if option == "Generate Contract":
     st.title("Contract Generator")
@@ -319,66 +322,3 @@ elif option == "Contract Insights":
             st.pyplot(fig)
         else:
             st.error("Please upload a contract file, multiple contract files, or a zip folder containing contracts.")
-
-# Contract Validation
-elif option == "Contract Validation":
-    st.header("Contract Validation")
-    
-    uploaded_file = st.file_uploader("Upload a contract for validation", type=["docx"])
-    
-    if uploaded_file is not None:
-        try:
-            # Extract contract data
-            contract_data = extract_contract_data(uploaded_file)
-            
-            # Initialize issues dictionary with all possible categories
-            issues = {
-                "Missing Fields": [],
-                "Date Problems": [],
-                "Expiring Soon": [],
-                "Complete and Valid": [],
-                "Missing Information": []
-            }
-            
-            # Validate contract data
-            validation_issues = validate_contract_data(contract_data)
-            
-            # Merge validation issues into main issues dictionary
-            if validation_issues:
-                for category, issue_list in validation_issues.items():
-                    if category not in issues:
-                        issues[category] = []
-                    issues[category].extend(issue_list)
-            
-            # Check for missing entities
-            missing_entities = check_completeness(str(contract_data))
-            
-            # Define friendly messages for missing entities
-            friendly_messages = {
-                "DATE": "The contract is missing a date",
-                "MONEY": "The contract is missing a monetary value",
-                "GPE": "The contract is missing a location",
-                "PERSON": "The contract is missing a person name",
-                "ORG": "The contract is missing an organization name"
-            }
-            
-            # Add missing entity messages to issues
-            for entity in missing_entities:
-                if entity in friendly_messages:
-                    issues["Missing Information"].append(friendly_messages[entity])
-            
-            # Remove empty categories
-            issues = {k: v for k, v in issues.items() if v}
-            
-            # Display validation results
-            if issues:
-                for category, category_issues in issues.items():
-                    if category_issues:  # Only show categories with actual issues
-                        st.subheader(category)
-                        for issue in category_issues:
-                            st.write(f"- {issue}")
-            else:
-                st.success("Contract validation passed successfully!")
-                
-        except Exception as e:
-            st.error(f"Error validating contract: {str(e)}")
