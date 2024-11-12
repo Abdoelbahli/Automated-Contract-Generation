@@ -1,9 +1,10 @@
 # requirements.txt
 python-dateutil
-# spacy==3.5.0  # Comment out or remove this line
 python-dotenv
 streamlit
-# Add any other necessary packages
+docxtpl
+pandas
+matplotlib
 
 # Specify Python version
 python_version >= "3.8", < "3.12"
