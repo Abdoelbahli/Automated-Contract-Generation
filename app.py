@@ -8,7 +8,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from contract_loader import extract_contract_data
 from validation_checks import check_completeness, validate_contract_data
+from pathlib import Path
 
+# Define the template path
+TEMPLATE_PATH = Path(__file__).parent / "templates" / "contract_template.docx"
 
 # Function to load and process contract data
 def load_contract_data(files):
@@ -71,7 +74,11 @@ if option == "Generate Contract":
             "governing_law": governing_law
         }
 
-        template = DocxTemplate("contract_template.docx")
+        # When using the template
+        template = load_contract_template()
+        if template is None:
+            st.stop()
+
         template.render(contract_data)
         output_filename = f"generated_contract_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx"
         template.save(output_filename)
@@ -289,3 +296,31 @@ elif option == "Contract Insights":
             st.pyplot(fig)
         else:
             st.error("Please upload a contract file, multiple contract files, or a zip folder containing contracts.")
+
+# When using the template
+def load_contract_template():
+    try:
+        if not TEMPLATE_PATH.exists():
+            st.error(f"Template file not found at: {TEMPLATE_PATH}")
+            return None
+        return DocxTemplate(str(TEMPLATE_PATH))
+    except Exception as e:
+        st.error(f"Error loading template: {str(e)}")
+        return None
+
+def generate_contract(contract_data):
+    try:
+        template = load_contract_template()
+        if template is None:
+            return None
+            
+        template.render(contract_data)
+        
+        # Create a BytesIO object to store the document
+        doc_io = BytesIO()
+        template.save(doc_io)
+        doc_io.seek(0)
+        return doc_io
+    except Exception as e:
+        st.error(f"Error generating contract: {str(e)}")
+        return None
