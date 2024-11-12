@@ -126,31 +126,8 @@ elif option == "Check Contract":
             # Extract contract data
             contract_data = extract_contract_data(uploaded_file)
             
-            # Initialize issues dictionary with all possible categories
-            issues = {
-                "Missing Fields": [],
-                "Date Problems": [],
-                "Expiring Soon": [],
-                "Complete and Valid": [],
-                "Missing Information": []
-            }
-            
             # Get validation results
-            validation_results = validate_contract_data(contract_data)
-            
-            # Merge validation results into issues
-            for category, result_list in validation_results.items():
-                if category not in issues:
-                    issues[category] = []
-                issues[category].extend(result_list)
-            
-            # Check completeness
-            completeness_issues = check_completeness(str(contract_data))
-            if completeness_issues:
-                issues["Missing Information"].extend(completeness_issues)
-            
-            # Remove empty categories
-            issues = {k: v for k, v in issues.items() if v}
+            issues = validate_contract_data(contract_data)
             
             # Display results
             if issues:
